@@ -1,0 +1,21 @@
+---
+- name: Install fail2ban
+  apt: name=fail2ban state=present
+  register: install
+  when: vm == 0
+
+- name: Copy template
+  when:
+    - install.changed
+    - vm == 0
+  template: src=jail.local
+            dest=/etc/fail2ban/jail.local
+  notify:
+  - restart fail2ban
+
+- name: Enable and start fail2ban
+  service:
+    name: fail2ban
+    enabled: yes
+    state: started
+  when: vm == 0

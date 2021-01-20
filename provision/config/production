@@ -1,0 +1,22 @@
+[production]
+production-hostname ansible_user=ubuntu ansible_port=22
+
+[production:vars]
+vm=0
+host=production
+domain=production.url
+username=userhere
+sync_folder=/home/{{ username }}/src/current
+ansible_python_interpreter=/usr/bin/python3
+
+# Document Root
+document_root=/public/
+
+# MySQL Application User
+dbname=namehere
+dbuser=userhere
+dbpassword=
+dbport=3306
+
+# MySQL Root password
+mysql_root_pass=

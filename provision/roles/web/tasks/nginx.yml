@@ -1,0 +1,60 @@
+---
+- name: Install Nginx
+  apt: name=nginx state=present
+
+- name: Install SOCAT
+  apt: name=socat state=present
+  when: host != 'local'
+
+- name: nginx template
+  template: src=default.conf.j2
+            dest=/etc/nginx/sites-available/default
+
+- name: Restart nginx to apply template
+  service:
+    name: nginx
+    state: restarted
+
+# For this app the self signed wont make sense due to CORs issuse between HTTP vite dev server and HTTP self signed certs
+#- name: Generate SSL key and Cert
+#  become: true
+#  command: openssl req -x509 -nodes -subj "/C=US/ST=California/L=Sacramento/O=Three29/CN={{ domain }}" -days 3650 -newkey rsa:2048 -keyout /etc/ssl/ss-nginx.key -out /etc/ssl/ss-nginx.crt
+#  when: host == 'local'
+
+#- name: DHParam fetch
+#  become: true
+#  script: ../templates/fetch-dhparam.sh
+#  when: host == 'local'
+
+- name: Clone the acme.sh repo for ssl
+  git:
+    repo: https://github.com/acmesh-official/acme.sh.git
+    dest: "/home/{{ username }}/acme.sh"
+  when: host != 'local'
+
+- name: Copy shell helper script for TLS
+  template:
+    src: ssl-installer.sh.j2
+    dest: "/home/{{ username }}/ssl-installer.sh"
+  when: host != 'local'
+
+- name: Generate cert/key
+  shell: "sh /home/{{ username }}/ssl-installer.sh"
+  become: true
+  when: host != 'local'
+
+- name: nginx template
+  template: src=default-ssl.conf.j2
+            dest=/etc/nginx/sites-available/default
+  when: host != 'local'
+
+- name: Install Certificate into NGINX
+  shell: "sh /home/{{ username }}/ssl-installer.sh"
+  become: true
+  when: host != 'local'
+
+- name: Restart nginx to apply template
+  service:
+    name: nginx
+    state: restarted
+

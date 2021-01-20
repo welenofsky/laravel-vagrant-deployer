@@ -1,0 +1,8 @@
+---
+- name: deployer deployment
+  local_action:
+    module: command
+    cmd:  "dep deploy --hosts={{ host }}"
+    chdir: "{{ playbook_dir }}/../"
+    debug: msg="{{playbook_dir}}"
+  notify: restart php-fpm

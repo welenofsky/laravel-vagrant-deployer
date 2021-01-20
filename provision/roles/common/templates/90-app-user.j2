@@ -1,0 +1,6 @@
+{{ username }}     ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart php8.0-fpm.service
+{{ username }}     ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload php8.0-fpm.service
+{{ username }}     ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart nginx.service
+{{ username }}     ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload nginx.service
+{{ username }}     ALL=(ALL) NOPASSWD: /usr/bin/systemctl restart redis.service
+{{ username }}     ALL=(ALL) NOPASSWD: /usr/bin/systemctl reload redis.service

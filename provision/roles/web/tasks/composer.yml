@@ -1,0 +1,3 @@
+---
+- name: Install Composer if not already installed
+  script: ../templates/composer-install.sh

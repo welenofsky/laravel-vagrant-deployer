@@ -1,0 +1,26 @@
+---
+- name: Install redis
+  apt:
+    name: redis
+    state: present
+
+- name: install the PECL redis extension
+  become: true
+  shell: printf "\n" | pecl install -s redis || true
+  notify:
+    - restart php-fpm
+    - restart nginx
+
+- name: enable redis extension for PHP
+  template:
+    src: redis.ini
+    dest: /etc/php/8.0/fpm/conf.d/redis.ini
+  notify:
+    - restart php-fpm
+    - restart nginx
+
+- name: Start redis service
+  service:
+    name: redis
+    enabled: yes
+    state: started

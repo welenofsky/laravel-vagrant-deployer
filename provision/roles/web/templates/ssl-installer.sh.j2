@@ -1,0 +1,16 @@
+#!/usr/bin/env sh
+
+# Install
+if [ ! -f ~/.acme.sh/acme.sh ]; then
+        if [ -f /home/{{ username }}/acme.sh/acme.sh ]; then
+                chdir /home/{{ username }}/acme.sh
+                sh acme.sh --install
+        fi
+
+        # Get a cert if we don't have a key
+        ~/.acme.sh/acme.sh --issue -d {{ domain }} -w {{ sync_folder }}{{ document_root }}
+fi
+
+if [ -d ~/.acme.sh/{{ domain }} ]; then
+    ~/.acme.sh/acme.sh --install-cert -d {{ domain }} --key-file /etc/ssl/ss-nginx.key --fullchain-file /etc/ssl/ss-nginx.crt --reloadcmd "sudo systemctl restart nginx.service"
+fi

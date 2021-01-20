@@ -1,0 +1,31 @@
+---
+- name: Running Vagrant Playbook...
+  hosts: localhost
+  become: true
+
+  roles:
+    - common
+    - web
+    - db
+    - mail
+
+- name: Running Staging Playbook
+  hosts: staging
+  become: true
+
+  roles:
+    - common
+    - ssh-deploy-keys
+    - mock-deploy
+    - web
+    - db
+
+- name: Production Provision
+  hosts: production
+  become: true
+
+  roles:
+    - common
+    - ssh-deploy-keys
+    - mock-deploy
+    - web

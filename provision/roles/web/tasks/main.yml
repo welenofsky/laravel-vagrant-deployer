@@ -1,0 +1,7 @@
+---
+- include: nginx.yml
+- include: php.yml
+- include: composer.yml
+- include: fail2ban.yml
+- include: redis.yml
+- include: supervisor.yml

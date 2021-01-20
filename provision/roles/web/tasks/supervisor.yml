@@ -1,0 +1,26 @@
+---
+- name: Install supervisor package
+  apt: name=supervisor state=present
+
+- name: create log directory
+  file:
+    path: "/home/{{ username }}/src/shared"
+    state: directory
+    recurse: yes
+    owner: "{{ username }}"
+    group: "{{ username }}"
+
+- name: Supervisor config
+  template: src=laravel-worker.conf.j2
+            dest=/etc/supervisor/conf.d/laravel-worker.conf
+  register: cnfg
+  notify:
+  - restart supervisor
+
+- name: update supervisor config
+  become: true
+  script: ../templates/update-supervisor-config.sh
+  when: cnfg.changed
+
+- name: Ensure supervisor service running
+  service: name=supervisor state=started

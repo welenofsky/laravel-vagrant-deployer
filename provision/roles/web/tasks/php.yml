@@ -1,0 +1,55 @@
+---
+- name: Add PHP PPA
+  apt_repository:
+    repo: 'ppa:ondrej/php'
+    codename: focal
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install php8
+  apt:
+    name: ['php8.0', 'php8.0-dev',
+           'php8.0-common', 'php8.0-mysql', 'php8.0-zip', 'php8.0-bz2', 'php8.0-cli',
+           'php8.0-curl', 'php8.0-gd', 'php8.0-cgi', 'php8.0-memcached', 'php8.0-pspell',
+           'php8.0-xml', 'php8.0-xsl', 'php8.0-sqlite3', 'php8.0-snmp',
+           'php8.0-opcache', 'php8.0-mbstring', 'php8.0-imap', 'php8.0-bcmath', 'php8.0-gd',
+           'php8.0-readline', 'php-pear', 'php8.0-imagick', 'php8.0-fpm', 'libmcrypt-dev']
+    state: present
+
+- name: ini file
+  template: src=10-project.ini
+          dest=/etc/php/8.0/fpm/conf.d/10-project.ini
+  notify:
+    restart nginx
+
+- name: Install xdebug
+  apt:
+    name: ['php-xdebug']
+    state: present
+  when: vm == 1
+
+- ini_file:
+    path: /etc/php/8.0/fpm/php.ini
+    section: xdebug
+    option: xdebug.remote_enable
+    value: '1'
+  notify:
+    restart nginx
+  when: vm == 1
+
+- ini_file:
+    path: /etc/php/8.0/fpm/php.ini
+    section: xdebug
+    option: xdebug.remote_connect_back
+    value: '1'
+  notify:
+    restart nginx
+  when: vm == 1
+
+#- name: pecl install mcrypt
+#  shell: pecl list | grep mcrypt || yes '' | pecl install mcrypt 1> /dev/null
+#
+#- name: Enable mcrypt module
+#  shell: phpenmod mcrypt

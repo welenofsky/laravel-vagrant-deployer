@@ -1,0 +1,37 @@
+---
+- name: Upgrade cache and system (safe upgrade)
+  apt: upgrade=safe update_cache=yes
+
+- name: Install git
+  apt: pkg=git,python3-pip
+
+- name: Install pexpect
+  pip:
+    name: pexpect
+
+- name: Install PyMySQL
+  pip:
+    name: PyMySQL
+
+- name: Installing build-tools
+  apt: pkg=build-essential,htop,vim,autoconf,libtool,pkg-config,libpq-dev,imagemagick,unzip,curl,npm,mdbtools,libsqlite3-dev,sqlite3,acl
+
+- name: Add the user account to system
+  user:
+    name: "{{ username }}"
+    shell: /bin/bash
+    groups: www-data
+    append: yes
+
+- name: Allow user to restart fpm service
+  template:
+    src: 90-app-user.j2
+    dest: /etc/sudoers.d/90-app-user
+
+- name: Create the application source folder
+  file:
+    path: "/home/{{ username}}/src"
+    state: directory
+    recurse: yes
+    owner: "{{ username }}"
+    group: www-data

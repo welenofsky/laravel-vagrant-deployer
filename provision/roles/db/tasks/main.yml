@@ -1,0 +1,55 @@
+---
+- name: Install MySQL
+  apt: pkg=mysql-server state=present
+
+# Note: If using private network this is needed as mysql only allows connections from localhost
+- name: Allow mysql access from outside VM
+  lineinfile:
+    path: /etc/mysql/mysql.conf.d/mysqld.cnf
+    regexp: '^bind-address'
+    line: 'bind-address            = 0.0.0.0'
+
+- name: Ensure MySQL is running
+  service: name=mysql state=started enabled=true
+
+- name: Set root MySQL user password
+  mysql_user:
+    name: root
+    password: "{{ mysql_root_pass }}"
+    login_unix_socket: /var/run/mysqld/mysqld.sock
+
+- name: Copy root PW config file to /root/.my.cnf
+  template: src=.my.cnf.j2
+            dest=/root/.my.cnf
+
+- name: Create a new database with name '{{ dbname }}'
+  mysql_db:
+    name: "{{ dbname }}"
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+  notify:
+    - restart mysql
+
+- mysql_user:
+    name: "{{ dbuser }}"
+    password: "{{ dbpassword }}"
+    priv: '*.*:ALL'
+    host: '%'
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+  when: vm == 1
+  notify:
+    - restart mysql
+
+- mysql_user:
+    name: "{{ dbuser }}"
+    password: "{{ dbpassword }}"
+    priv: '{{ dbname }}.*:ALL'
+    state: present
+    login_user: root
+    login_password: "{{ mysql_root_pass }}"
+  when: vm == 0
+  notify:
+    - restart mysql

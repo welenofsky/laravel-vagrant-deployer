@@ -1,0 +1,39 @@
+---
+- name: Install Apache
+  apt: name=apache2 state=present
+
+- name: Create SSL dir
+  file:
+    path: /etc/apache2/ssl
+    state: directory
+    mode: 0755
+
+- name: Generate SSL key and Cert
+  become: true
+  command: openssl req -x509 -nodes -subj "/C=US/ST=California/L=Sacramento/O=IT/CN={{ host }}" -days 3650 -newkey rsa:2048 -keyout /etc/apache2/ssl/apache.key -out /etc/apache2/ssl/apache.crt
+  when: vm == 1
+
+- name: Apache2 Template Copy
+  template: src=default.conf.j2
+            dest=/etc/apache2/sites-available/000-default.conf
+  notify:
+    restart apache2
+
+#- name: Apache2 Template Copy
+#  template: src=default-ssl.conf.j2
+#            dest=/etc/apache2/sites-available/default-ssl.conf
+#  notify:
+#    restart apache2
+#
+#- name: Enable SSL module for apache2
+#  apache2_module:
+#    state: present
+#    name: ssl
+
+- name: Enable mod_rewrite
+  apache2_module:
+    state: present
+    name: rewrite
+
+- name: Restart apache2
+  service: name=apache2 state=restarted

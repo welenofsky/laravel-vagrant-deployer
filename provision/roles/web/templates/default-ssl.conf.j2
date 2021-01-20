@@ -1,0 +1,84 @@
+# generated 2020-07-17, Mozilla Guideline v5.4, nginx 1.18.0, OpenSSL 1.1.1f, intermediate configuration
+# https://ssl-config.mozilla.org/#server=nginx&version=1.18.0&config=intermediate&openssl=1.1.1f&guideline=5.4
+server {
+    client_max_body_size 250M;
+    listen 80 default_server;
+    listen [::]:80 default_server;
+
+    location / {
+        # Cors handled by application other than options
+        if ($request_method = 'OPTIONS') {
+           add_header 'Access-Control-Allow-Origin' '{{ cors_allow_origin }}';
+           add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+           add_header 'Access-Control-Allow-Credentials' 'true';
+           #
+           # Custom headers and headers various browsers *should* be OK with but aren't
+           #
+           add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,X-CSRF-Token,X-XSRF-TOKEN';
+           #
+           # Tell client that this pre-flight info is valid for 20 days
+           #
+           add_header 'Access-Control-Max-Age' 1728000;
+           add_header 'Content-Type' 'text/plain; charset=utf-8';
+           add_header 'Content-Length' 0;
+           return 204;
+        }
+    }
+
+    return 301 https://$host$request_uri;
+}
+
+server {
+    client_max_body_size 250M;
+    listen 443 ssl http2;
+    listen [::]:443 ssl http2;
+
+    ssl_certificate /etc/ssl/ss-nginx.crt;
+    ssl_certificate_key /etc/ssl/ss-nginx.key;
+    ssl_session_timeout 1d;
+    ssl_session_cache shared:MozSSL:10m;  # about 40000 sessions
+    ssl_session_tickets off;
+
+    # modern configuration
+    ssl_protocols TLSv1.3;
+    ssl_prefer_server_ciphers off;
+
+    root {{ sync_folder }}{{ document_root }};
+
+    index index.html index.htm index.php;
+
+    server_name _;
+
+    location / {
+        # Cors handled by application other than options
+        if ($request_method = 'OPTIONS') {
+           add_header 'Access-Control-Allow-Origin' '{{ cors_allow_origin }}';
+           add_header 'Access-Control-Allow-Methods' 'GET, POST, OPTIONS';
+           add_header 'Access-Control-Allow-Credentials' 'true';
+           #
+           # Custom headers and headers various browsers *should* be OK with but aren't
+           #
+           add_header 'Access-Control-Allow-Headers' 'DNT,User-Agent,X-Requested-With,If-Modified-Since,Cache-Control,Content-Type,Range,X-CSRF-Token,X-XSRF-TOKEN';
+           #
+           # Tell client that this pre-flight info is valid for 20 days
+           #
+           add_header 'Access-Control-Max-Age' 1728000;
+           add_header 'Content-Type' 'text/plain; charset=utf-8';
+           add_header 'Content-Length' 0;
+           return 204;
+        }
+
+        try_files $uri $uri/ /index.php$is_args$args;
+    }
+
+    location ~ \.php$ {
+       include snippets/fastcgi-php.conf;
+       fastcgi_pass unix:/var/run/php/php-fpm.sock;
+    }
+
+    location ~ /\.ht    {return 404;}
+    location ~ /\.svn/  {return 404;}
+    location ~ /\.git/  {return 404;}
+    location ~ /\.hg/   {return 404;}
+    location ~ /\.bzr/  {return 404;}
+}

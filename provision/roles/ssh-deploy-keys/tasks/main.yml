@@ -1,0 +1,7 @@
+---
+- name: Install deployment key
+  authorized_key:
+    user: "{{ username }}"
+    state: present
+    key: "{{ lookup('file', 'ssh-keys/mvs-' + host + '-deploy.pub') }}"
+  when: vm == 0

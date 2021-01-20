@@ -1,0 +1,8 @@
+---
+- name: Install Adminer
+  script: ../templates/adminer-install.sh
+  when: vm == 1
+
+- name: Restart apache2
+  service: name=apache2 state=restarted
+  when: vm == 1

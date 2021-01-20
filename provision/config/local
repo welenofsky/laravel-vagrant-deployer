@@ -1,0 +1,25 @@
+# Vagrant Config
+[local]
+localhost ansible_user=vagrant ansible_port=2222 ansible_host=127.0.0.1
+
+[local:vars]
+vm=1
+host=local
+domain=api.motion-iq.test
+username=vagrant
+sync_folder=/home/{{ username }}/src
+ansible_python_interpreter=/usr/bin/python3
+cors_allow_origin='$http_origin'
+queue_worker_log=/home/{{ username }}/src/worker.log
+
+# Document Root
+document_root=/public/
+
+# MySQL Application User
+dbname=test
+dbuser=test
+dbpassword=secret
+dbport=3306
+
+# MySQL Root password
+mysql_root_pass=toor

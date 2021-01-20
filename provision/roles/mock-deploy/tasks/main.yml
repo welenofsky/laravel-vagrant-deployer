@@ -1,0 +1,31 @@
+---
+- name: Create releases folder
+  file:
+    path: "/home/{{ username }}/src/releases"
+    state: directory
+    owner: "{{ username }}"
+    group: www-data
+  register: releasedir
+
+- name: Create first release
+  file:
+    path: "/home/{{ username }}/src/releases/0/public"
+    state: directory
+    recurse: true
+    owner: "{{ username }}"
+    group: www-data
+  when: releasedir.changed
+
+- name: Symlink the release to current
+  file:
+    src: "/home/{{ username }}/src/releases/0"
+    dest: "/home/{{ username }}/src/current"
+    state: link
+  when: releasedir.changed
+
+- name: Create shared folder
+  file:
+    path: "/home/{{ username }}/src/shared"
+    state: directory
+    owner: "{{ username }}"
+    group: www-data
